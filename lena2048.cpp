@@ -104,28 +104,33 @@ void renderScore(WINDOW *scoreWindow, int score) {
   wrefresh(scoreWindow);
 }
 
-// TODO: test this
 bool hasLost(int grid[4][4]) {
-  int temp[4][4];
-  copy(&grid[0][0], &grid[0][0] + 16, &temp[0][0]);
-  for (int i = 0; i < 4; i++) {
-    processMove(temp[i]);
+  if (hasEmptySpace(grid)) {
+    return false;
   }
-  transpose(temp);
+
+  // check for merge-able numbers
   for (int i = 0; i < 4; i++) {
-    processMove(temp[i]);
-  }
-  transpose(temp);
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 3; j++) {
-      if (temp[i][j] == temp[i][j + 1]) {
+    for (int j = 1; j < 4; j++) {
+      if (grid[i][j] == grid[i][j - 1]) {
         return false;
       }
     }
   }
+
+  // check for merge-able numbers, other direction
+  for (int j = 0; j < 4; j++) {
+    for (int i = 1; i < 4; i++) {
+      if (grid[i][j] == grid[i - 1][j]) {
+        return false;
+      }
+    }
+  }
+
   return true;
 }
 
+// sum of all numbers on the grid
 int getscore(int grid[4][4]) {
   int score = 0;
   for (int i = 0; i < 4; i++) {
@@ -169,6 +174,7 @@ void processGridMove(int grid[4][4], Direction direction) {
   }
 }
 
+// for debugging purposes, create a losing situation
 void makeGridLose(int grid[4][4]) {
   grid[0][0] = 2;
   grid[0][1] = 4;
@@ -200,6 +206,7 @@ void clearBoard(WINDOW *board[4][4]) {
 
 int main() {
 
+  // initialize ncurses, set terminal to raw mode
   initscr();
 
   WINDOW *board[4][4];
@@ -207,6 +214,7 @@ int main() {
 
   WINDOW *scoreWindow = createScoreWindow();
 
+  // render out root window to the terminal
   refresh();
 
   while (true) {
@@ -251,6 +259,7 @@ int main() {
     getch();
   }
 
+  // return terminal to normal mode
   endwin();
   return 0;
 }
